@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -19,21 +20,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank(message:'Le champ email ne peut être null')]
+    #[Assert\Email(message:'Le format email n\'est pas correct. Exemple nom.prenom@home.com.')]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message:'Le ROLE doit être renseigné.')]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message:'Veuillez renseigner un mot de passe.')]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Length(exactly:5,exactMessage:'Le zipcode doit comporter 5 chiffres sans espaces. ')]
     private ?string $zipcode = null;
 
 

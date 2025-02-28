@@ -11,9 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class UserController extends AbstractController
 {
@@ -34,24 +36,28 @@ final class UserController extends AbstractController
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/users', name: 'createUser', methods: ['POST'])]
+    //PUBLIC_ACCESS
+    #[Route('/api/user', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request,
         EntityManagerInterface $em,
         SerializerInterface $serializer,
-        UrlGeneratorInterface $urlGenerator): JsonResponse
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator): JsonResponse
     {
-        try {
-            $user = $serializer->deserialize($request->getContent(), User::class, 'json');
-            $em->persist($user);
-            $em->flush();
+        $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        
+        $errors = $validator->validate($user);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+        $em->persist($user);
+        $em->flush();
 
-            $jsonUser = $serializer->serialize($user, 'json');
-            $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $jsonUser = $serializer->serialize($user, 'json');
+        $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
            
             return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['location' => $location], true);
-        } catch (NotEncodableValueException $e) {
-            return new JsonResponse(['error' => 'Invalid JSON format'], JsonResponse::HTTP_BAD_REQUEST);
-        }
+        
     }
 
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
