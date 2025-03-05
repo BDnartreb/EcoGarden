@@ -11,8 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -45,6 +43,7 @@ final class UserController extends AbstractController
         ValidatorInterface $validator): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $user->setRoles(["ROLE_USER"]);
         
         $errors = $validator->validate($user);
         if ($errors->count() > 0) {
@@ -64,12 +63,19 @@ final class UserController extends AbstractController
     public function updateTip(Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        User $currentUser): JsonResponse
+        User $currentUser,
+        ValidatorInterface $validator): JsonResponse
     {
         $updateUser = $serializer->deserialize($request->getContent(),
             User::class, 
             'json', 
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
+        
+        $errors = $validator->validate($updateUser);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+        
         $em->persist($updateUser);
         $em->flush();
         
@@ -84,7 +90,4 @@ final class UserController extends AbstractController
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
-
-
-
 }

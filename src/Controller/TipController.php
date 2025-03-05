@@ -78,12 +78,19 @@ final class TipController extends AbstractController
     public function updateTip(Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        Tip $currentTip): JsonResponse
+        Tip $currentTip, 
+        ValidatorInterface $validator): JsonResponse
     {
         $updateTip = $serializer->deserialize($request->getContent(),
             Tip::class, 
             'json', 
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentTip]);
+        
+        $errors = $validator->validate($updateTip);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+        
         $em->persist($updateTip);
         $em->flush();
         
