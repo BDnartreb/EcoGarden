@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Tip;
 use App\Entity\User;
+use App\Entity\Month;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -32,14 +33,35 @@ class AppFixtures extends Fixture
         $userAdmin->setZipcode("76150");
         $manager->persist($userAdmin);
 
-        for ($i=0; $i<30; $i++){
+       
+
+        for ($i=0; $i<20; $i++){
             $tip = new Tip();
             $tip->setTitle('tip n°' . $i);
             $tip->setContent('Conseil n°' . $i);
-            $tip->setMonth(random_int(1, 12));
             $manager->persist($tip);
+            $listTip []= $tip;
         }
 
+        /* pour affecter 1 à 5 tutu à un toto
+        foreach ($totos as $toto) {
+            for ($i = 0; $i < mt_rand(1, 5); $i++) {
+                $toto->addTutu($tutu[mt_rand(0, count($tutu) -1)]);
+            }    
+        }
+        https://www.google.com/search?q=comment+associer+deux+objet+dans+une+relation+ManyToMany+symfony&oq=comment+associer+deux+objet+dans+une+relation+ManyToMany+symfony&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCTE0NDU3ajBqNKgCALACAQ&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:0d0abe55,vid:rUr4PrN-fqo,st:0
+        minute 17    
+        */
+
+        for ($i=1; $i<13; $i++){
+            $month = new Month();
+            $month->setMonth($i);
+            $month->addTip($listTip[array_rand($listTip)]);
+            //$month->setMonth(random_int(1, 12));
+            $manager->persist($month);
+            $monthList [] = $month;
+        }
+       
         $manager->flush();
     }
 }

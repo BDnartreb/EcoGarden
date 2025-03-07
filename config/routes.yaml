@@ -8,6 +8,8 @@ kernel:
     resource: ../src/Kernel.php
     type: attribute
 
-api_login_check:
-    path: /api/login_check
+# api_login_check:
+  #  path: /api/login_check
 
+api_login_check:
+    path: /api/auth

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -45,24 +46,29 @@ RETOURNE ERREUR
             $item->tag("meteoCache");
             //gets latitude and longitude coordinates of the city from the zipcode
             //https://openweathermap.org/api/geocoding-api
-            $coordinates = $this->client->request(
-                'GET',
-                sprintf(
-                //'http://api.openweathermap.org/geo/1.0/zip?zip=' . $zipcode . ',FR&appid=' . $apiKey .''
-                'http://api.openweathermap.org/geo/1.0/zip?zip=%s,FR&appid=%s',
-                $zipcode,
-                $apiKey
-                )
-            );
-            
-            $locationArray = $coordinates->toArray();
-            $lat = $locationArray['lat'] ?? null;
-            $lon = $locationArray['lon'] ?? null;
 
-            if (!$lat || !$lon) {
-                return new JsonResponse(['error' => 'Coordinates not found'], JsonResponse::HTTP_BAD_REQUEST);
+            try {
+                $coordinates = $this->client->request(
+                    'GET',
+                    sprintf(
+                    //'http://api.openweathermap.org/geo/1.0/zip?zip=' . $zipcode . ',FR&appid=' . $apiKey .''
+                    'http://api.openweathermap.org/geo/1.0/zip?zip=%s,FR&appid=%s',
+                    $zipcode,
+                    $apiKey
+                    )
+                );
+                $locationArray = $coordinates->toArray();
+                $lat = $locationArray['lat'] ?? null;
+                $lon = $locationArray['lon'] ?? null;
+                
+                if (!$lat || !$lon) {
+                    return new JsonResponse(['error' => 'Coordinates not found'], JsonResponse::HTTP_NOT_FOUND);
+                }
+
+            } catch (Exception $e) {
+                return new JsonResponse(['error' => 'Le code postal n\'a pas été trouvé!'], JsonResponse::HTTP_NOT_FOUND);
             }
-
+   
             //Gets weather data form the site https://openweathermap.org/current
             $weatherResponse = $this->client->request(
                 'GET',
@@ -88,49 +94,4 @@ RETOURNE ERREUR
         $zipcode = $user->getZipcode();
         return $this->redirectToRoute('api_meteo_zipcode', ['zipcode' => $zipcode]);
     }
-
-//Without Cache
-/*    #[Route('/api/meteo/nocache/{zipcode}', name: 'api_meteo_zipcode_nocache', methods:['GET'])]
-    public function getApiMeteoNoCache(string $zipcode): JsonResponse
-    {
-        $apiKey = $this->apiKey;
-
-            //gets latitude and longitude coordinates of the city from the zipcode
-            //https://openweathermap.org/api/geocoding-api
-            $coordinates = $this->client->request(
-                'GET',
-                //'http://api.openweathermap.org/geo/1.0/zip?zip=' . $zipcode . ',FR&appid=' . $apiKey .''
-                sprintf(
-                    'http://api.openweathermap.org/geo/1.0/zip?zip=%s,FR&appid=%s',
-                    $zipcode,
-                    $apiKey
-                )
-            );
-            
-            $locationArray = $coordinates->toArray();
-            $lat = $locationArray['lat'] ?? null;
-            $lon = $locationArray['lon'] ?? null;
-
-            if (!$lat || !$lon) {
-                return new JsonResponse(['error' => 'Coordinates not found'], JsonResponse::HTTP_BAD_REQUEST);
-            }
-
-            //Gets weather data form the site https://openweathermap.org/current
-            $weatherResponse = $this->client->request(
-                'GET',
-            //Current wheather request
-                //'https://api.openweathermap.org/data/2.5/weather?lat=' . $lat . '&lon=' . $lon . '&appid=' . $apiKey .''
-            //3 hours forecast for 5 days request
-            sprintf(
-                'https://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s&appid=%s',
-                $lat,
-                $lon,
-                $this->apiKey
-                )
-            );
-
-        return new JsonResponse($weatherResponse->getContent(), $weatherResponse->getStatusCode(), [], true);
-    }
-*/
-
 }

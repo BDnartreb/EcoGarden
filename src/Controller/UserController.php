@@ -55,7 +55,7 @@ final class UserController extends AbstractController
         $jsonUser = $serializer->serialize($user, 'json');
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
            
-            return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['location' => $location], true);
+        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['location' => $location], true);
         
     }
 
