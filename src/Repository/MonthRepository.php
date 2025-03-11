@@ -16,6 +16,17 @@ class MonthRepository extends ServiceEntityRepository
         parent::__construct($registry, Month::class);
     }
 
+    public function findOneByMonth($value): ?Month
+        {
+            return $this->createQueryBuilder('m')
+                ->andWhere('m.month = :val')
+                ->setParameter('val', $value)
+                ->getQuery()
+                ->getOneOrNullResult()
+            ;
+        }
+
+
     //    /**
     //     * @return Month[] Returns an array of Month objects
     //     */

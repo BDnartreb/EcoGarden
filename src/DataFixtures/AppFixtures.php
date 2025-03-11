@@ -33,14 +33,28 @@ class AppFixtures extends Fixture
         $userAdmin->setZipcode("76150");
         $manager->persist($userAdmin);
 
-       
+        for ($i=1; $i<13; $i++){
+            $month = new Month();
+            $month->setMonth($i);
+            $manager->persist($month);
+            $monthList [] = $month;
+        }
+
+            //$month->addTip($listTip[array_rand($listTip)]);
+            //$month->setMonth(random_int(1, 12));
 
         for ($i=0; $i<20; $i++){
             $tip = new Tip();
             $tip->setTitle('tip n°' . $i);
             $tip->setContent('Conseil n°' . $i);
             $manager->persist($tip);
-            $listTip []= $tip;
+            $tips []= $tip;
+        }
+
+        foreach ($tips as $tip) {
+            for ($i=0; $i < mt_rand(0,3); $i++){
+                $tip->addMonth($monthList[mt_rand(0, count($monthList) -1)]);
+            }
         }
 
         /* pour affecter 1 à 5 tutu à un toto
@@ -53,14 +67,7 @@ class AppFixtures extends Fixture
         minute 17    
         */
 
-        for ($i=1; $i<13; $i++){
-            $month = new Month();
-            $month->setMonth($i);
-            $month->addTip($listTip[array_rand($listTip)]);
-            //$month->setMonth(random_int(1, 12));
-            $manager->persist($month);
-            $monthList [] = $month;
-        }
+        
        
         $manager->flush();
     }

@@ -26,6 +26,7 @@ final class TipController extends AbstractController
     {
         $tipList = $tipRepository->findAll();
         $jsonTipList = $serializer->serialize($tipList, 'json', ['groups' => 'getTipList']);
+        
         return new JsonResponse($jsonTipList, Response::HTTP_OK, [], true);
     }
 
@@ -41,30 +42,6 @@ final class TipController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
 
-    /*OLD
-    #[Route('/api/tips/{month}', name: 'monthTips', methods: ['GET'])]
-    public function getMonthTips(Month $month, 
-        SerializerInterface $serializer): JsonResponse
-    {
-        //if($month){
-            $jsonTipsByMonth = $serializer->serialize($tipsByMonth, 'json');
-            return new JsonResponse($month, Response::HTTP_OK, [], true);
-        //}
-        //return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-    }
-
-    #[Route('/api/tips/{month}', name: 'monthTips', methods: ['GET'])]
-    public function getMonthTips(int $month, TipRepository $tipRepository,
-        SerializerInterface $serializer): JsonResponse
-    {
-        $tipsByMonth = $tipRepository->findByMonth($month);
-        if($tipsByMonth){
-            $jsonTipsByMonth = $serializer->serialize($tipsByMonth, 'json');
-            return new JsonResponse($jsonTipsByMonth, Response::HTTP_OK, [], true);
-        }
-        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-    }*/
-
     #[Route('/api/tips/id/{id}', name: 'detailTip', methods: ['GET'])]
     public function getDetailTip(Tip $tip,
         SerializerInterface $serializer): JsonResponse
@@ -73,7 +50,7 @@ final class TipController extends AbstractController
         return new JsonResponse($jsonTip, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
-    //#[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits nécessaires pour créer un conseil.')]
+    #[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits nécessaires pour créer un conseil.')]
     #[Route('/api/tips', name: 'createTip', methods: ['POST'])]
     public function createTip(Request $request,
         SerializerInterface $serializer,
@@ -84,10 +61,9 @@ final class TipController extends AbstractController
         $tip = $serializer->deserialize($request->getContent(), Tip::class, 'json', ['groups' => 'createTip']);
 
         $content = $request->toArray();
-        $monthIds = $content['month'] ?? [];
-
-        foreach ($monthIds as $monthId) {
-            $month = $em->getRepository(Month::class)->find($monthId);
+        $monthNbs = $content['month'] ?? [];
+        foreach ($monthNbs as $monthNb) {
+            $month = $em->getRepository(Month::class)->findOneByMonth($monthNb);
             if ($month) {
                 $tip->addMonth($month);
             } else {
@@ -109,36 +85,6 @@ final class TipController extends AbstractController
         return new JsonResponse($jsonTip, Response::HTTP_CREATED, ['location' => $location], true);
     }
 
-/* CREE UN TIP MAIS NE LIE PAS LE MOIS
-   //#[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits nécessaires pour créer un conseil.')]
-    #[Route('/api/tips', name: 'createTip', methods: ['POST'])]
-    public function createTip(Request $request,
-        SerializerInterface $serializer,
-        EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator, 
-        ValidatorInterface $validator): JsonResponse
-    {
-        $tip = $serializer->deserialize($request->getContent(), Tip::class, 'json');
-
-        $errors = $validator->validate($tip);
-        if ($errors->count() > 0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
-
-        $errors = $validator->validate($tip);
-        if ($errors->count() > 0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
-
-        $em->persist($tip);
-        $em->flush();
-        
-        $jsonTip = $serializer->serialize($tip, 'json');
-        $location = $urlGenerator->generate('detailTip', ['id' => $tip->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-            
-        return new JsonResponse($jsonTip, Response::HTTP_CREATED, ['location' => $location], true);
-    }
-*/
     #[IsGranted('ROLE_ADMIN', message:'Vous n\'avez pas les droits nécessaires pour modifier un conseil.')]
     #[Route('/api/tips/id/{id}', name: 'updateTip', methods: ['PUT'])]
     public function updateTip(Request $request,
@@ -151,6 +97,22 @@ final class TipController extends AbstractController
             Tip::class, 
             'json', 
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentTip]);
+
+        $content = $request->toArray();
+        $monthNbs = $content['month'] ?? [];
+
+        foreach ($currentTip->getMonths() as $currentMonth) {
+            $currentTip->removeMonth($currentMonth);
+        }
+
+        foreach ($monthNbs as $monthNb) {
+            $month = $em->getRepository(Month::class)->findOneByMonth($monthNb);
+            if ($month) {
+                $updateTip->addMonth($month);
+            } else {
+                return new JsonResponse(['error' => 'Mois non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+            }
+        }
         
         $errors = $validator->validate($updateTip);
         if ($errors->count() > 0) {

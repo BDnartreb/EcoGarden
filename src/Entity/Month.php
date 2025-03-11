@@ -24,7 +24,7 @@ class Month
      * @var Collection<int, Tip>
      */
     #[ORM\ManyToMany(targetEntity: Tip::class, mappedBy: 'months')]
-    //#[Groups(['createTip'])]
+    #[Groups(['getMonthTips'])]
     private Collection $tips;
 
     public function __construct()

@@ -34,6 +34,7 @@ class Tip
      */
     //#[ORM\ManyToMany(targetEntity: Month::class, inversedBy: 'tips', cascade: ['persist'])]
     #[ORM\ManyToMany(targetEntity: Month::class, inversedBy: 'tips')]
+    #[Groups(['getTipList', 'getDetailTip'])]
     //#[Groups(['createTip'])]
     private Collection $months;
 

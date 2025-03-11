@@ -24,16 +24,8 @@ final class ApiMeteoController extends AbstractController
         // Gets api key from .env.local
         $this->apiKey = $_ENV['API_KEY'] ?? '';
     }
-/*
-RETOURNE ERREUR
-{
-    "status": 500,
-    "message": "Call to a member function getContent() on string"
-}*/
 
-//With Cache
     #[Route('/api/meteo/{zipcode}', name: 'api_meteo_zipcode', methods:['GET'])]
-    //public function getApiMeteo(string $zipcode, CacheInterface $cache): JsonResponse
     public function getApiMeteo(?string $zipcode, TagAwareCacheInterface $cache): JsonResponse
     {
         $idCache = "getApiMeteo-" . $zipcode;
@@ -62,7 +54,7 @@ RETOURNE ERREUR
                 $lon = $locationArray['lon'] ?? null;
                 
                 if (!$lat || !$lon) {
-                    return new JsonResponse(['error' => 'Coordinates not found'], JsonResponse::HTTP_NOT_FOUND);
+                    return new JsonResponse(['error' => 'Les coordonnées géographiques de la ville correspondant au code postal demandé n\'ont pas été trouvées.'], JsonResponse::HTTP_NOT_FOUND);
                 }
 
             } catch (Exception $e) {
