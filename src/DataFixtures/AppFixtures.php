@@ -40,9 +40,6 @@ class AppFixtures extends Fixture
             $monthList [] = $month;
         }
 
-            //$month->addTip($listTip[array_rand($listTip)]);
-            //$month->setMonth(random_int(1, 12));
-
         for ($i=0; $i<20; $i++){
             $tip = new Tip();
             $tip->setTitle('tip n°' . $i);
@@ -51,23 +48,12 @@ class AppFixtures extends Fixture
             $tips []= $tip;
         }
 
+        //To define several months to one tip 
         foreach ($tips as $tip) {
             for ($i=0; $i < mt_rand(0,3); $i++){
                 $tip->addMonth($monthList[mt_rand(0, count($monthList) -1)]);
             }
-        }
-
-        /* pour affecter 1 à 5 tutu à un toto
-        foreach ($totos as $toto) {
-            for ($i = 0; $i < mt_rand(1, 5); $i++) {
-                $toto->addTutu($tutu[mt_rand(0, count($tutu) -1)]);
-            }    
-        }
-        https://www.google.com/search?q=comment+associer+deux+objet+dans+une+relation+ManyToMany+symfony&oq=comment+associer+deux+objet+dans+une+relation+ManyToMany+symfony&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCTE0NDU3ajBqNKgCALACAQ&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:0d0abe55,vid:rUr4PrN-fqo,st:0
-        minute 17    
-        */
-
-        
+        }       
        
         $manager->flush();
     }

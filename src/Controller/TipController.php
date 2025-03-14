@@ -20,6 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class TipController extends AbstractController
 {
+    //IS_AUTHENTICATED_FULLY
     #[Route('/api/tips', name: 'tipList', methods: ['GET'])]
     public function getTipList(TipRepository $tipRepository,
         SerializerInterface $serializer): JsonResponse
@@ -30,6 +31,7 @@ final class TipController extends AbstractController
         return new JsonResponse($jsonTipList, Response::HTTP_OK, [], true);
     }
 
+    //IS_AUTHENTICATED_FULLY
     #[Route('/api/tips/{month}', name: 'monthTips', methods: ['GET'])]
     public function getMonthTips(int $month, MonthRepository $MonthRepository,
         SerializerInterface $serializer): JsonResponse
@@ -42,6 +44,7 @@ final class TipController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
 
+    //IS_AUTHENTICATED_FULLY
     #[Route('/api/tips/id/{id}', name: 'detailTip', methods: ['GET'])]
     public function getDetailTip(Tip $tip,
         SerializerInterface $serializer): JsonResponse

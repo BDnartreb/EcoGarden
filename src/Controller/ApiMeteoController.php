@@ -25,6 +25,7 @@ final class ApiMeteoController extends AbstractController
         $this->apiKey = $_ENV['API_KEY'] ?? '';
     }
 
+    //ROLE_USER
     #[Route('/api/meteo/{zipcode}', name: 'api_meteo_zipcode', methods:['GET'])]
     public function getApiMeteo(?string $zipcode, TagAwareCacheInterface $cache): JsonResponse
     {
@@ -79,6 +80,7 @@ final class ApiMeteoController extends AbstractController
         return new JsonResponse($jsonMeteo, JsonResponse::HTTP_OK, [], true);
     }
 
+    //ROLE_USER
     #[Route('/api/meteo/', name: 'api_meteo_default', methods:['GET'])]
     public function getApiMeteoDefaut(): RedirectResponse
     {

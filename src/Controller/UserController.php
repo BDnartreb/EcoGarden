@@ -25,7 +25,7 @@ final class UserController extends AbstractController
     }
 
     //PUBLIC_ACCESS
-    #[Route('/api/user', name: 'createUser', methods: ['POST'])]
+    #[Route('/api/users', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request,
         EntityManagerInterface $em,
         SerializerInterface $serializer,

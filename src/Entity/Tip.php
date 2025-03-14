@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinTable;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -32,22 +31,14 @@ class Tip
     /**
      * @var Collection<int, Month>
      */
-    //#[ORM\ManyToMany(targetEntity: Month::class, inversedBy: 'tips', cascade: ['persist'])]
     #[ORM\ManyToMany(targetEntity: Month::class, inversedBy: 'tips')]
     #[Groups(['getTipList', 'getDetailTip'])]
-    //#[Groups(['createTip'])]
     private Collection $months;
 
     public function __construct()
     {
         $this->months = new ArrayCollection();
     }
-
-   /* #[ORM\Column]
-    #[Assert\NotBlank(message:'Un conseil doit être rattaché à un mois.')]
-    #[Assert\Range(min:1, max:12, notInRangeMessage:"Le mois doit être indiqué par un entier compris entre {{ min }} et {{ max }}.")]
-    private ?int $month = null;
-    */
 
     public function getId(): ?int
     {
