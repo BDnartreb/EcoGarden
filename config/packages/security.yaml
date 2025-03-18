@@ -49,7 +49,7 @@ security:
          - { path: ^/api/auth, roles: PUBLIC_ACCESS }
          - { path: ^/api/doc, roles: PUBLIC_ACCESS }
          - { path: ^/api/meteo, roles: ROLE_USER }
-         - { path: ^/api/user, roles: PUBLIC_ACCESS, methods: ['POST'] }
+         - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: ['POST'] }
          - { path: ^/api/users, roles: ROLE_ADMIN }
          - { path: ^/api/tips, roles: IS_AUTHENTICATED_FULLY }
 

@@ -25,7 +25,11 @@ final class ApiMeteoController extends AbstractController
         $this->apiKey = $_ENV['API_KEY'] ?? '';
     }
 
-    //ROLE_USER
+     
+    /**
+    * Route permettant d'accéder aux données météo de la ville sélectionnée à partir de son code postale
+    * Accessible aux utilisateurs connectés
+    */
     #[Route('/api/meteo/{zipcode}', name: 'api_meteo_zipcode', methods:['GET'])]
     public function getApiMeteo(?string $zipcode, TagAwareCacheInterface $cache): JsonResponse
     {
@@ -80,7 +84,10 @@ final class ApiMeteoController extends AbstractController
         return new JsonResponse($jsonMeteo, JsonResponse::HTTP_OK, [], true);
     }
 
-    //ROLE_USER
+    /**
+    * Route permettant d'accéder aux données météo. Renvoi par défaut la ville de l'utilisateur connecté
+    * Accessible aux utilisateurs connectés
+    */
     #[Route('/api/meteo/', name: 'api_meteo_default', methods:['GET'])]
     public function getApiMeteoDefaut(): RedirectResponse
     {

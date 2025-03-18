@@ -24,7 +24,17 @@ final class UserController extends AbstractController
         $this->userPasswordHasher = $userPasswordHasher;
     }
 
-    //PUBLIC_ACCESS
+    /**
+    * Route permettant de créer un nouvel utilisateur
+    * Accessible sans restriction
+    * Body raw
+    * {
+    * "email": "adresse_email",
+    * "password": "password",
+    * "roles": ["ROLE_USER"],
+    * "zipcode": "52402"
+    * }
+    */
     #[Route('/api/users', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request,
         EntityManagerInterface $em,
@@ -33,6 +43,11 @@ final class UserController extends AbstractController
         ValidatorInterface $validator): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        
+        if(!$user->getPassword()){
+            return new JsonResponse(['error' => 'Le mot de passe doit être renseigné.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
         $user->setPassword($this->userPasswordHasher->hashPassword($user, "password"));
         $user->setRoles(["ROLE_USER"]);
         
@@ -50,7 +65,10 @@ final class UserController extends AbstractController
         
     }
     
-    //ADMIN ACCESS
+    /**
+    * Route permettant d'afficher la liste des utilisateurs
+    * Accessible uniquement aux administrateurs (ROLE_ADMIN)
+    */
     #[Route('/api/users', name: 'userList', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository,
         SerializerInterface $serializer): JsonResponse
@@ -60,7 +78,10 @@ final class UserController extends AbstractController
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
-    //ADMIN ACCESS
+    /**
+    * Route permettant d'afficher un utilisateur sélectionné par son identifiant
+    * Accessible uniquement aux administrateurs (ROLE_ADMIN)
+    */
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailUser(User $user,
         SerializerInterface $serializer): JsonResponse
@@ -69,7 +90,17 @@ final class UserController extends AbstractController
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
-    //ADMIN ACCES
+    /**
+    * Route permettant de modifier un utilisateur sélectionné par son identifiant
+    * Accessible uniquement aux administrateurs (ROLE_ADMIN)
+    * Body raw
+    * {
+    * "email": "adresse_email",
+    * "password": "password",
+    * "roles": ["ROLE_USER"],
+    * "zipcode": "52402"
+    * }
+    */
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
     public function updateUser(Request $request,
         SerializerInterface $serializer,
@@ -81,6 +112,9 @@ final class UserController extends AbstractController
             User::class, 
             'json', 
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
+
+        $updateUser->setPassword($this->userPasswordHasher->hashPassword($updateUser, "password"));
+        $updateUser->setRoles(["ROLE_USER"]);
         
         $errors = $validator->validate($updateUser);
         if ($errors->count() > 0) {
@@ -93,7 +127,10 @@ final class UserController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    //ADMIN ACCESS
+    /**
+    * Route permettant de supprimer un utilisateur sélectionné par son identifiant
+    * Accessible uniquement aux administrateurs (ROLE_ADMIN)
+    */
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
